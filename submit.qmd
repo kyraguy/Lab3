@@ -1,28 +1,114 @@
 ---
-title: ""
-author: ""
-format:
-  html:
-    embed-resources: true
+title: "Lab 3"
+author: "Kyra Guy"
+format: html
+editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+## 1 
 
 ```{r}
-1 + 1
+download.file(
+  "https://raw.githubusercontent.com/USCbiostats/data-science-data/master/02_met/met_all.gz",
+  destfile = file.path("~", "Downloads", "met_all.gz"),
+  method   = "libcurl",
+  timeout  = 60
+)
+
+met <- data.table::fread(file.path("~", "Downloads", "met_all.gz"))
+
 ```
 
-You can add options to executable code like this
+## 2 
 
 ```{r}
-#| echo: false
-2 * 2
+dim(met)
+head(met)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+Rows: 2,377,343
+
+Columns: 30
+
+## 3
+
+```{r}
+str(met)
+```
+
+## 4
+
+```{r}table(met$year)}
+table(met$day)
+table(met$hour)
+summary(met$elev)
+summary(met$wind.sp)
+met[met$elev==9999.0] <- NA
+summary(met$elev)
+met <- met[temp>-40]
+met2 <- met[order(temp)]
+head(met2)
+> met <- met[temp>-15]
+> met2 <- met[order(temp)]
+> head(met2)
+```
+
+The weather station with the highest elevation is 4113 meters.
+
+## 5
+
+```{r}met <- met[temp>-15]}
+met2 <- met[order(temp)]
+head(met2)
+
+```
+
+## 6
+
+```{r}
+elev <- met[elev==max(elev), ]
+summary(elev)
+cor(elev$temp, elev$wind.sp, use="complete")
+cor(elev$temp, elev$hour, use="complete")
+cor(elev$wind.sp, elev$day, use="complete")
+cor(elev$wind.sp, elev$hour, use="complete")
+cor(elev$temp, elev$day, use="complete")
+```
+
+## 7
+
+```{r}
+hist(met$elev, breaks=100)
+hist(met$temp)
+hist(met$wind.sp)
+library(magrittr)
+leaflet(elev) %>%
+  addProviderTiles('OpenStreetMap') %>% 
+  addCircles(lat=~lat,lng=~lon, opacity=1, fillOpacity=1, radius=100)
+library(lubridate)
+elev$date <- with(elev, ymd_h(paste(year, month, day, hour, sep= ' ')))
+summary(elev$date)
+elev <- elev[order(date)]
+head(elev)
+plot(elev$date, elev$temp, type='l')
+```
+
+Wind is higher in middle and late August.
+
+## 8
+
+```{r}
+
+hist(met$dew.point)
+> hist(met$atm.press)
+> hist(met$rh)
+boxplot(met$wind.dir, col = 'blue')
+boxplot(wind.sp~year,data=met)
+
+```
+
+```{r}
+boxplot(wind.sp~year,data=met)
+```
+
+I was trying to look at the difference in wind speed stratified by year.
